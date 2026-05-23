@@ -1,0 +1,41 @@
+<#
+.SYNOPSIS
+    Join-LabPC.ps1 - Joins a fresh laptop to cyber.local.
+
+.DESCRIPTION
+    Marek from IT sent me this so I can onboard new marketing team laptops
+    myself instead of waiting for a helpdesk ticket each time.
+
+    Drops the machine into OU=Lab_Computers automatically (per Marek - "that's
+    where all the workstations live").
+
+.NOTES
+    From Marek's email (2024-Q1):
+      "Hey, here's the join script I promised. It uses a special service
+       account (lab_joiner) that ONLY has rights to add machines to the
+       Lab_Computers OU - can't touch anything else. Don't worry about the
+       password being in the script, the account is locked down. Just don't
+       share this outside the team."
+#>
+
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$ComputerName,
+
+    [string]$Domain    = "cyber.local",
+    [string]$TargetOU  = "OU=Lab_Computers,DC=cyber,DC=local"
+)
+
+# Service account from Marek - delegated rights on Lab_Computers OU only.
+$joinUser = "cyber\lab_joiner"
+$joinPass = ConvertTo-SecureString "GhPub_J0in3r#24" -AsPlainText -Force
+$cred     = New-Object System.Management.Automation.PSCredential($joinUser, $joinPass)
+
+Rename-Computer -NewName $ComputerName -Force -ErrorAction SilentlyContinue
+
+Add-Computer -DomainName $Domain `
+             -Credential $cred `
+             -OUPath $TargetOU `
+             -Restart -Force
+
+Write-Host "[+] Joined $ComputerName to $Domain (OU: $TargetOU)"
