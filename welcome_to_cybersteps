@@ -28,7 +28,7 @@ param(
 
 # Service account from Marek - delegated rights on Lab_Computers OU only.
 $joinUser = "cyber\lab_joiner"
-$joinPass = ConvertTo-SecureString "GhPub_J0in3r#24" -AsPlainText -Force
+$joinPass = ConvertTo-SecureString "<REPLACE_WITH_PASSWORD>" -AsPlainText -Force
 $cred     = New-Object System.Management.Automation.PSCredential($joinUser, $joinPass)
 
 Rename-Computer -NewName $ComputerName -Force -ErrorAction SilentlyContinue
